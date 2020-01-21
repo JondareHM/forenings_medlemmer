@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from django.db import models
+import members.models.department as Department
+import members.models.person as Person
+import members.models.member as Member
+import members.models.payment as Payment
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from datetime import date
 
 
 class Union(models.Model):
@@ -43,6 +48,22 @@ class Union(models.Model):
             )
         ],
     )
+    def departments(self):
+        return Department.objects.filter(union = self)
+    
+    def members(self):
+        departments = departments(self)
+        d = defaultdict(list)
+        for department in departments:
+            members = members + Member.objects.filter(department = department)
+        years = range(founded.year, date.today().year+1)
+        for year in years:
+            for member in members:
+                payments = Payment.objects.filter(person = member.person, confirmed_dtm__year = year)
+                paid = sum(payments.amount_ore)
+                if paid >= 7500:
+                    d[year].append(member.person)
+        return d
 
     def __str__(self):
         return "Foreningen for " + self.name
